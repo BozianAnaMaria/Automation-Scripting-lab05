@@ -37,35 +37,129 @@ This project automates building, testing, configuring, and deploying a PHP proje
 - Configures Apache virtual host for the PHP project.
 - Ensures Apache is enabled and running.
 
+## Description of the Ansible Playbook and Its Tasks
+
+File: ansible/setup_test_server.yml
+
+Purpose:
+
+Configure the test server environment required for PHP application deployment.
+
+### Main Tasks:
+1. Update package manager
+- name: Update APT cache
+  apt:
+    update_cache: yes
+
+2. Install required packages
+- name: Install utilities
+  apt:
+    name: ['php', 'php-mysql', 'apache2']
+    state: present
+
+3. Ensure Apache is running
+- name: Enable and start apache
+  service:
+    name: apache2
+    state: started
+    enabled: yes
+
+4. Deploy index.php or configuration file (optional)
+- name: Place example index.php
+  copy:
+    src: ./files/index.php
+    dest: /var/www/html/
+
+5. Set correct permissions
+- name: Set permissions
+  file:
+    path: /var/www/html
+    mode: '0755'
+
+
+This playbook ensures the test server becomes fully prepared for deployment.
+
 ## Jenkins Pipelines
 
 - **php_build_and_test_pipeline.groovy**: clones PHP repo, installs dependencies, runs PHPUnit tests, and reports results.
 - **ansible_setup_pipeline.groovy**: clones ansible repo and runs playbook to configure test server.
 - **php_deploy_pipeline.groovy**: clones PHP repo and deploys files to test server via Ansible.
 
-## Advantages of Using Ansible for Server Configuration
 
-- Agentless: connects over SSH without installing additional software.
-- Idempotent: safe to run multiple times with predictable outcomes.
-- Declarative language makes configuration readable and maintainable.
-- Wide module ecosystem for managing packages, services, files, users, etc.
-- Easily integrates with CI/CD pipelines like Jenkins.
+## Theoretical Questions
+1. What are the advantages of using Ansible for server configuration?
 
-## Other Ansible Modules for Configuration Management
+- Agentless architecture
+No software required on the managed servers—only SSH.
 
-- `user` - manage user accounts
-- `package` - install/remove software packages
-- `service` - manage services
-- `copy` - copy files
-- `template` - manage config files with templates
-- `git` - deploy code from repositories
-- `firewalld` - manage firewall settings
-- `docker_container` - manage Docker containers
-- `mysql_db` - manage MySQL databases
+- Idempotency
+Running the same playbook multiple times produces the same server state.
 
-## Problems Encountered and Solutions
+- Human-readable YAML syntax
+Easy to learn and maintain.
 
-- SSH authentication issues solved by careful key management and permissions.
-- Networking between Docker containers required careful port mappings and dependency ordering.
-- Ensuring Ansible ran with proper privileges to install software using `become: yes`.
-- Debugging the playbook by enabling verbose Ansible output and iterative testing.
+- Reusable roles and tasks
+Saves time when configuring multiple servers.
+
+- Supports large infrastructure
+Can configure hundreds of servers in parallel.
+
+- Integration with CI/CD tools
+Works perfectly with Jenkins pipelines.
+
+2. What other Ansible modules exist for configuration management?
+
+Some commonly used modules:
+
+2.1. System Management
+- apt, yum, dnf → package management
+- service → start/stop services
+- user, group → manage users
+
+2.2. File and Permissions
+- copy
+- template
+- file
+- unarchive
+
+2.3. Networking
+- ufw
+- iptables
+- firewalld
+
+2.4. Cloud Providers
+- aws_* modules
+- azure_rm_*
+- gcp_compute
+
+2.5 Database
+- mysql_db
+- postgresql_db
+- mongodb_user
+
+
+3. What problems did you encounter when creating the Ansible playbook and how did you solve them?
+- Problem 1: SSH authentication failed
+
+Cause: Wrong private key path or missing permissions.
+Solution: Added correct SSH key in Jenkins and used correct --private-key path.
+
+- Problem 2: Ansible could not ping the test server
+
+Cause: Missing Python inside Docker test server.
+Solution: Installed Python via Ansible or built the container with it included.
+
+- Problem 3: Permissions issues in /var/www/html
+
+Cause: Apache user owned the directory.
+Solution: Used Ansible file module to set permissions.
+
+- Problem 4: Composer not installed on Jenkins
+
+Cause: Jenkins agent did not have composer.
+Solution: Installed Composer inside pipeline or used docker agent with PHP image.
+
+- Problem 5: Jenkins pipeline failed due to missing tools
+
+Cause: Jenkins container runs as non-root user.
+Solution: Installed necessary tools using a special Jenkins Docker agent or pre-built environment.
