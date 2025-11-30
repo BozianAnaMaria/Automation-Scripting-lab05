@@ -8,16 +8,16 @@ pipeline {
         }
         stage('Install dependencies') {
             steps {
-                sh 'composer install --no-interaction'
+                sh 'cd php-project && composer install --no-interaction'
             }
         }
         stage('Run tests') {
             steps {
-                sh './vendor/bin/phpunit -c php-project/phpunit.xml --log-junit results.xml'
+                sh 'cd php-project && ./vendor/bin/phpunit -c phpunit.xml --log-junit results.xml'
             }
             post {
                 always {
-                    junit 'results.xml'
+                    junit 'php-project/results.xml'
                 }
             }
         }

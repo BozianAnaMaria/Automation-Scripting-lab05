@@ -8,8 +8,8 @@ pipeline {
         }
         stage('Deploy to test server') {
             steps {
-                // Using ansible ad-hoc copy or playbook
-                sh "ansible -i ansible/hosts.ini testserver -m copy -a 'src=/var/jenkins_home/workspace/ yourdest=/var/www/html/' --private-key ./ssh-keys/id_rsa"
+                // Copy PHP project files to test server
+                sh 'ansible -i ansible/hosts.ini testserver -m copy -a "src=./php-project/ dest=/var/www/html/ recursive=yes" --private-key ./ssh-keys/id_rsa'
             }
         }
     }

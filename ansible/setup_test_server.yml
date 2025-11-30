@@ -21,11 +21,12 @@
 
     - name: Copy project files to webroot
       copy:
-        src: /var/www/html/
+        src: php-project/
         dest: /var/www/html/
         owner: www-data
         group: www-data
         mode: '0755'
+        recurse: yes
 
 
     - name: Ensure apache site config exists

@@ -23,6 +23,15 @@ RUN useradd -m -s /bin/bash ansible && echo "ansible:ansible" | chpasswd && addu
 RUN echo "ansible ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ansible
 
 
+# Copy SSH keys and authorized_keys
+COPY ssh-keys/authorized_keys /home/ansible/.ssh/authorized_keys
+COPY ssh-keys/id_rsa* /home/ansible/.ssh/
+
+RUN chown -R ansible:ansible /home/ansible/.ssh && \
+    chmod 700 /home/ansible/.ssh && \
+    chmod 600 /home/ansible/.ssh/authorized_keys /home/ansible/.ssh/id_rsa*
+
+
 # Create webroot
 RUN mkdir -p /var/www/html
 WORKDIR /var/www/html
