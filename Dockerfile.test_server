@@ -1,0 +1,35 @@
+FROM ubuntu:22.04
+ENV DEBIAN_FRONTEND=noninteractive
+
+
+RUN apt-get update && apt-get install -y \
+openssh-server \
+apache2 \
+php \
+libapache2-mod-php \
+php-cli \
+php-xml \
+php-mbstring \
+sudo \
+&& rm -rf /var/lib/apt/lists/*
+
+
+# Setup SSH
+RUN mkdir /var/run/sshd
+RUN useradd -m -s /bin/bash ansible && echo "ansible:ansible" | chpasswd && adduser ansible sudo
+
+
+# Allow passwordless sudo for ansible (not recommended for production, fine for lab)
+RUN echo "ansible ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ansible
+
+
+# Create webroot
+RUN mkdir -p /var/www/html
+WORKDIR /var/www/html
+
+
+# Expose SSH and HTTP
+EXPOSE 22 80
+
+
+CMD ["/usr/sbin/sshd", "-D"]

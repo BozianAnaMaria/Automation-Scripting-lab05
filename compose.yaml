@@ -1,0 +1,62 @@
+version: '3.8'
+- "8080:8080"
+- "50000:50000"
+volumes:
+- jenkins_home:/var/jenkins_home
+- ./pipelines:/var/jenkins_home/pipelines
+- ./ssh-keys:/var/jenkins_home/.ssh:ro
+networks:
+- labnet
+restart: unless-stopped
+
+
+ssh-agent:
+build:
+context: .
+dockerfile: Dockerfile.ssh_agent
+container_name: ssh-agent
+volumes:
+- ./ssh-keys:/home/jenkins/.ssh:ro
+networks:
+- labnet
+restart: unless-stopped
+
+
+ansible-agent:
+build:
+context: .
+dockerfile: Dockerfile.ansible_agent
+container_name: ansible-agent
+volumes:
+- ./ansible:/home/ansible/ansible:ro
+- ./ssh-keys:/home/ansible/.ssh:ro
+networks:
+- labnet
+depends_on:
+- test-server
+restart: unless-stopped
+
+
+test-server:
+build:
+context: .
+dockerfile: Dockerfile.test_server
+container_name: test-server
+ports:
+- "8022:22"
+- "8081:80"
+volumes:
+- ./php-project:/var/www/html:ro
+- ./ssh-keys:/home/ansible/.ssh:ro
+networks:
+- labnet
+restart: unless-stopped
+
+
+volumes:
+jenkins_home:
+
+
+networks:
+labnet:
+driver: bridge

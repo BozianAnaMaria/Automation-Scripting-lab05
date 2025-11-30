@@ -1,0 +1,37 @@
+# Composer vendor directory (installed PHP dependencies)
+php-project/vendor/
+
+# PHPUnit cache and logs
+php-project/.phpunit.result.cache
+php-project/tests/_output/
+php-project/tests/_logs/
+php-project/results.xml
+
+# SSH keys (very important to exclude private keys)
+ssh-keys/
+*.pem
+*.key
+*.pub
+
+# Docker temporary files (optional)
+**/*.log
+**/*.tmp
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node modules (if you have any node stuff)
+node_modules/
+
+# Composer lock file is usually included, but if you want:
+# php-project/composer.lock
+
+# Misc
+*.swp
+*~

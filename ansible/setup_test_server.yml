@@ -1,0 +1,49 @@
+- name: Configure test server for PHP project
+  hosts: testserver
+  become: yes
+  tasks:
+    - name: Ensure apache2 is installed
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+
+
+    - name: Ensure PHP and extensions are installed
+      apt:
+        name:
+          - php
+          - libapache2-mod-php
+          - php-xml
+          - php-mbstring
+        state: present
+
+
+    - name: Copy project files to webroot
+      copy:
+        src: /var/www/html/
+        dest: /var/www/html/
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+
+    - name: Ensure apache site config exists
+      copy:
+        dest: /etc/apache2/sites-available/000-default.conf
+        content: |
+          <VirtualHost *:80>
+            DocumentRoot /var/www/html
+            <Directory /var/www/html>
+              AllowOverride All
+              Require all granted
+            </Directory>
+          </VirtualHost>
+      notify: restart apache
+
+
+  handlers:
+    - name: restart apache
+      service:
+        name: apache2
+        state: restarted
